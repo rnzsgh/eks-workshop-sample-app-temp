@@ -17,7 +17,7 @@ func main() {
 
 		w.WriteHeader(http.StatusOK)
 
-		io.WriteString(w, "Hello World - now we have CI/CD\n")
+		io.WriteString(w, "Hello World\n")
 
 		for _, e := range os.Environ() {
 			pair := strings.Split(e, "=")
