@@ -7,7 +7,7 @@ phases:
       - curl -sS -o bin/aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator
       - curl -sS -o bin/kubectl https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/kubectl
       - chmod +x ./bin/kubectl ./bin/aws-iam-authenticator
-      - mkdir -p golang/bin && export GOPATH=$PWD/golang && export PATH=$PWD/golang/bin:$PWD/bin:$PATH
+      - export PATH=$PWD/bin:$PATH
       - apt-get update && apt-get -y install jq golang python3-pip python3-dev && pip3 install --upgrade awscli
   pre_build:
       commands:
@@ -23,9 +23,7 @@ phases:
   post_build:
     commands:
       - docker push $REPOSITORY_URI:$TAG
-      - echo $EKS_KUBECTL_ROLE_ARN
       - CREDENTIALS=$(aws sts assume-role --role-arn $EKS_KUBECTL_ROLE_ARN --role-session-name codebuild-kubectl --duration-seconds 900)
-      - echo ${CREDENTIALS} | jq -r '.Credentials.AccessKeyId'
       - export AWS_ACCESS_KEY_ID="$(echo ${CREDENTIALS} | jq -r '.Credentials.AccessKeyId')"
       - export AWS_SECRET_ACCESS_KEY="$(echo ${CREDENTIALS} | jq -r '.Credentials.SecretAccessKey')"
       - export AWS_SESSION_TOKEN="$(echo ${CREDENTIALS} | jq -r '.Credentials.SessionToken')"
