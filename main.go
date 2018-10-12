@@ -1,37 +1,47 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 )
 
 func main() {
-
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 
 		f := fib()
 
-		w.WriteHeader(http.StatusOK)
-
-		io.WriteString(w, "Hello World\n")
+		res := &response{Message: "Hello World"}
 
 		for _, e := range os.Environ() {
 			pair := strings.Split(e, "=")
-			io.WriteString(w, pair[0]+"="+pair[1]+"\n")
+			res.EnvVars = append(res.EnvVars, pair[0]+"="+pair[1])
 		}
 
 		for i := 1; i <= 90; i++ {
-			io.WriteString(w, strconv.Itoa(f())+"\n")
+			res.Fib = append(res.Fib, f())
 		}
 
-		fmt.Println("Hello world - the log message")
+		// Beautify the JSON output
+		out, _ := json.MarshalIndent(res, "", "\t")
 
+		// Normally this would be application/json, but we don't want to prompt downloads
+		w.Header().Set("Content-Type", "text/plain")
+
+		io.WriteString(w, string(out))
+
+		fmt.Println("Hello world - the log message")
 	})
 	http.ListenAndServe(":8080", nil)
+}
+
+type response struct {
+	Message string   `json:"message"`
+	EnvVars []string `json:"envVars"`
+	Fib     []int    `json:"fib"`
 }
 
 func fib() func() int {
