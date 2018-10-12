@@ -26,7 +26,7 @@ func main() {
 		}
 
 		// Beautify the JSON output
-		out, _ := json.MarshalIndent(res, "", "\t")
+		out, _ := json.MarshalIndent(res, "", "  ")
 
 		// Normally this would be application/json, but we don't want to prompt downloads
 		w.Header().Set("Content-Type", "text/plain")
